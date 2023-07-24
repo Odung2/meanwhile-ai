@@ -1,17 +1,11 @@
-from django.db import models
-from djongo.models.fields import ListField
+from djongo import models
 
-class Article:
-    article_id = models.IntegerField(auto_created=True, primary_key=True)
-    summary = models.CharField()
-    keywords = ListField()
-    refs = ListField()
+class Article(models.Model):
+    _id = models.ObjectIdField(primary_key=True)
+    summary = models.CharField(max_length=255)
+    keywords = models.JSONField(blank=True, null=True)
+    refs = models.JSONField(blank=True, null=True)
     date = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
-        return self.keywords
-    
     class Meta:
-        db_table = 'meanwhile_ai_db'
-
-    
+        db_table = 'articles'

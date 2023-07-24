@@ -1,6 +1,16 @@
 from rest_framework import viewsets
 from .models import Article
 from .serializer import ArticleSerializer
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
+@api_view(['GET'])
+def get_articles(request):
+    articles = Article.objects.all()
+    print(articles)
+    serializer = ArticleSerializer(articles, many=True)
+    print(serializer.data)
+    return Response(serializer.data)
 
 def crawl_and_store_articles():
     news_summary = "News Content..."
