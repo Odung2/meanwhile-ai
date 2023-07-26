@@ -20,7 +20,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from sentence_transformers import SentenceTransformer
 
-print("Step 1-2: Extract keyword from korean search... ")
+print("Step 7-1: Extract keyword from korean timeline... ")
 
 # 예시) 드론에 대한 한국어 문서
 """
@@ -37,7 +37,7 @@ doc = '''
          "향후 화재진압, 인명구조 등에도 드론을 활용하기 위해 연구개발(R&D)을 하고 있다"고 말했다.
       '''
 """
-with open('data/processed_data/1_search/search_ko.txt', mode='r', newline='', encoding='utf-8') as file:
+with open('data/processed_data/6_timeline_translate/timeline_ko.txt', mode='r', newline='', encoding='utf-8') as file:
     # 파일의 내용을 읽어 변수에 저장
     doc = file.read()
 
@@ -55,7 +55,7 @@ tokenized_nouns = ' '.join([word[0] for word in tokenized_doc if word[1] == 'Nou
 # 2개의 단어를 한 묶음으로 간주하는 bigram과
 # 3개의 단어를 한 묶음으로 간주하는 trigram을 추출
 
-n_gram_range = (1, 3)
+n_gram_range = (1, 1)
 
 count = CountVectorizer(ngram_range=n_gram_range).fit([tokenized_nouns])
 candidates = count.get_feature_names_out()
@@ -202,7 +202,7 @@ print(";".join(result) + '\n')
 
 result = mmr(doc_embedding, candidate_embeddings, candidates, top_n=5, diversity=0.7)
 
-with open('data/processed_data/1_search/search_keyword_ko.txt', mode='w', newline='', encoding='utf-8') as file:
+with open('data/processed_data/7_timeline_keyword/timeline_keyword_ko.txt', mode='w', newline='', encoding='utf-8') as file:
     file.write(";".join(result) + '\n')
 
 print("Complete!!!\n")

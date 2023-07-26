@@ -3,7 +3,7 @@ from tqdm import tqdm
 import numpy as np
 
 def input_text():
-    with open('data/raw_data/search.txt', mode='r', newline='', encoding='utf-8') as file:
+    with open('data/processed_data/7_timeline_keyword/search.txt', mode='r', newline='', encoding='utf-8') as file:
         # 파일의 내용을 읽어 변수에 저장
         return file.read()
 
@@ -11,8 +11,17 @@ def input_csv():
     # return pd.read_csv('data/processed_data/5_article_final/rss_part5.csv', sep=';', keep_default_na=False)
     return pd.read_csv('data/processed_data/database.csv', sep=';', keep_default_na=False)
 
-def output_csv(df):
-    df.to_csv('data/processed_data/database.csv', sep=';', index=False)
+def output_txt(timeline_ko, timeline_en):
+    with open('data/processed_data/8_timeline_final/timeline_final.txt', mode='r', newline='', encoding='utf-8') as file:
+        print("timeline_ko")
+        for event in timeline_ko:
+            print(event)
+        print("\n")
+
+        print("timeline_en")
+        for event in timeline_en:
+            print(event)
+        print("\n")
 
 if __name__ == '__main__':
     print("Step 6: Make Timeline... ")
@@ -71,9 +80,6 @@ if __name__ == '__main__':
     for idx, row in df_en.iterrows():
         timeline_en[int(group_en[idx])].append(row)
 
-    print(timeline_ko)
-    print("\n")
-    print(timeline_en)
-    print("\n")
+    output_txt(timeline_ko, timeline_en)
 
     print("Complete!!!\n")

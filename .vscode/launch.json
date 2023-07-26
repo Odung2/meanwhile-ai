@@ -1,0 +1,19 @@
+{
+    "version": "0.2.0",
+    "configurations":[
+        {
+            "name": "Python: Gunicorn",
+            "request": "launch",
+            "type": "python",
+            "module": "gunicorn",
+            "args": [
+                "--bind",
+                "127.0.0.1:443",
+                "--config",
+                "gunicorn-cfg.py",
+                "meanwhile.wsgi"
+            ],
+            "django": true
+        }
+    ]
+}

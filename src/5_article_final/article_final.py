@@ -5,15 +5,15 @@ import sys
 from pathlib import Path
 
 import os
+import django
 target_path = Path(__file__).resolve().parent.parent.parent
 sys.path.append(str(target_path))
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "meanwhile.settings")
 
-import django
-django.setup()
-
 from articles.models import Article
+
+django.setup()
 """
 def input_csv():
     return pd.read_csv('data/processed_data/4_article_keyword/rss_part4.csv', sep=';', keep_default_na=False)
@@ -28,6 +28,8 @@ def output_db(df):
     df.to_csv('data/processed_data/database.csv', sep=';', index=False)
 
 if __name__ == '__main__':
+    
+
     print("Step 5: Article final... ")
 
     df = input_csv()
@@ -66,6 +68,14 @@ if __name__ == '__main__':
         new_refs = row['url']
         news_src = row['image']
         news_date = row['date']
+        news_lang = row['language']
+
+        # new_article = Article(summary = news_summary, keywords=news_keywords, refs = new_refs, url=news_src, date=news_date, lang=news_lang)
+
+        # print(new_article)
+
+        # new_article.save()
+
 
     output_csv(df_filtered)
 
@@ -86,11 +96,3 @@ if __name__ == '__main__':
     output_db(db)
 
     print("Complete!!!\n")
-
-"""
-        new_article = Article(summary = news_summary, keywords=news_keywords, refs = new_refs, url=news_src, date=news_date)
-
-        print(new_article)
-
-        new_article.save()
-"""

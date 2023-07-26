@@ -23,7 +23,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from sentence_transformers import SentenceTransformer
 
-print("Step 1-3: Extract keyword from english search... ")
+print("Step 7-2: Extract keyword from english timeline... ")
 
 """이 튜토리얼에서는 지도 학습에 대한 영어 문서를 사용합니다. 여러분들이 이미 친숙한 주제에 대한 문서이므로 키워드 추출이 잘 되고 있는지 여러분들이 직관적으로 판단하기에 좋은 예시일 것입니다."""
 """
@@ -45,7 +45,7 @@ doc = '''
          in a 'reasonable' way (see inductive bias).
       '''
 """
-with open('data/processed_data/1_search/search_en.txt', mode='r', newline='', encoding='utf-8') as file:
+with open('data/processed_data/6_timeline_translate/timeline_en.txt', mode='r', newline='', encoding='utf-8') as file:
     # 파일의 내용을 읽어 변수에 저장
     doc = file.read()
 
@@ -172,7 +172,7 @@ def mmr(doc_embedding, candidate_embeddings, words, top_n, diversity):
 
 result = mmr(doc_embedding, candidate_embeddings, candidates, top_n=5, diversity=0.7)
 
-with open('data/processed_data/1_search/search_keyword_en.txt', mode='w', newline='', encoding='utf-8') as file:
+with open('data/processed_data/7_timeline_keyword/timeline_keyword_en.txt', mode='w', newline='', encoding='utf-8') as file:
     file.write(";".join(result) + '\n')
 
 print("Complete!!!\n")
