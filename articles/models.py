@@ -8,6 +8,7 @@ class Article(models.Model):
     refs = models.TextField()
     date = models.DateTimeField()
     url = models.TextField()
+    lang = models.IntegerField(null=True)
 
     class Meta:
         db_table = 'articles'
