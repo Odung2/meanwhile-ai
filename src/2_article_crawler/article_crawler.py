@@ -6,7 +6,7 @@ import requests
 from bs4 import BeautifulSoup
 
 import requests
-from requests.exceptions import SSLError, RequestException
+from requests.exceptions import SSLError, RequestException, Timeout
 
 from urllib.parse import urlparse
 
@@ -42,6 +42,8 @@ domain_conditions_map = {
     "www.forbes.com": {'tag': 'div', 'class': 'article-body fs-article fs-responsive-text current-article'},
     "www.billboard.com": {'tag': 'div', 'class': 'a-content lrv-a-floated-parent lrv-a-glue-parent a-font-body-m'},
     "www.koreaboo.com": {'tag': 'div', 'class': 'entry-content'},
+    "www.sportskeeda.com": {'tag': 'div', 'id': 'article-content'},
+    "www.bnd.com": {'tag': 'article', 'class': 'paper story-body'},
 }
 
 def find_article_body(soup, url):
@@ -96,6 +98,7 @@ def get_article_text(url):
     else:
         return None, None
 
+from concurrent.futures import ThreadPoolExecutor, TimeoutError
 import time
 
 def append_article(df):
@@ -110,21 +113,46 @@ def append_article(df):
         for _, row in df.iterrows():
             url = row['link']
             try:
-                response = requests.get(url)
+                # executor = ThreadPoolExecutor(max_workers=1)
+                # with ThreadPoolExecutor(max_workers=1) as executor:
+                # future = executor.submit(requests.get, url, timeout=2)
+
+                # try:
+                #     response = future.result()
+                #     article_image, article_body =  get_article_text(response.url)
+
+                #     redirect.append(True)
+                #     redirectLink.append(response.url)
+                #     articleImage.append(article_image)
+                #     articleBody.append(article_body)
+                # except TimeoutError:
+                #     future.cancel()
+                    
+                #     redirect.append(False)
+                #     redirectLink.append("TimeoutError")
+                #     articleImage.append(None)
+                #     articleBody.append(None)
+
+                response = requests.get(url, timeout=2)
                 article_image, article_body = get_article_text(response.url)
 
-                redirect.append("True")
+                redirect.append(True)
                 redirectLink.append(response.url)
                 articleImage.append(article_image)
                 articleBody.append(article_body)
             except SSLError:
-                redirect.append("False")
+                redirect.append(False)
                 redirectLink.append("SSLError")
                 articleImage.append(None)
                 articleBody.append(None)
             except RequestException:
-                redirect.append("False")
+                redirect.append(False)
                 redirectLink.append("RequestException")
+                articleImage.append(None)
+                articleBody.append(None)
+            except Timeout:
+                redirect.append(False)
+                redirectLink.append("Timeout")
                 articleImage.append(None)
                 articleBody.append(None)
             # row.append(f";{get_article_text(row[1])}")
@@ -155,3 +183,5 @@ if __name__ == '__main__':
     output_csv(df)
 
     print("Complete!!!\n")
+
+    quit()
