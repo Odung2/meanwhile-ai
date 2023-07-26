@@ -1,29 +1,17 @@
-from rest_framework import viewsets
 from .models import Article
 from .serializer import ArticleSerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from django.http import JsonResponse
 
 @api_view(['GET'])
-def get_articles(request):
-    articles = Article.objects.all()
-    print(articles)
-    serializer = ArticleSerializer(articles, many=True)
-    print(serializer.data)
-    return Response(serializer.data)
+def get_trend_news(request):
+    total_articles = Article.objects.count()
 
-def crawl_and_store_articles():
-    news_summary = "News Content..."
-    news_keywords = ["keyword1", "keyword2"]
-    new_refs = ["ref1", "ref2"]
+    num_articles_to_retrieve = 30 if total_articles>=30 else total_articles
 
-    new_article = Article(summary = news_summary, keywords = news_keywords, refs = new_refs)
+    latest_articles = Article.objects.order_by('-date')[:num_articles_to_retrieve].values()
 
-    new_article.save()
-
-    if __name__ == "__main__":
-        crawl_and_store_articles()
-
-class ArticleViewSet(viewsets.ModelViewSet):
-    queryset = Article.objects.all()
-    serializer_class = ArticleSerializer
+    article_list = list(latest_articles)
+    
+    return JsonResponse(article_list, safe=False)
