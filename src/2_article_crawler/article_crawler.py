@@ -11,7 +11,7 @@ from requests.exceptions import SSLError, RequestException
 from urllib.parse import urlparse
 
 def input_csv():
-    return pd.read_csv('data/raw_data/rss_part1.csv', sep=';')
+    return pd.read_csv('data/processed_data/2_article_crawler/rss_part1.csv', sep=';')
 
 def get_article_domain(url):
     domain = urlparse(url).netloc
@@ -34,6 +34,14 @@ domain_conditions_map = {
     "www.businesspost.co.kr": {'tag': 'div', 'class': 'detail_editor'},
     "www.yna.co.kr": {'tag': 'article', 'class': 'story-news article'},
     "news.kbs.co.kr": {'tag': 'div', 'class': 'landing-box'},
+    "biz.chosun.com": {'tag': 'section', 'class': 'article-body'},
+    "www.hani.co.kr": {'tag': 'div', 'class': 'text'},
+        
+
+    "hitsdailydouble.com": {'tag': 'div', 'class': 'hits_news_detail_post'},
+    "www.forbes.com": {'tag': 'div', 'class': 'article-body fs-article fs-responsive-text current-article'},
+    "www.billboard.com": {'tag': 'div', 'class': 'a-content lrv-a-floated-parent lrv-a-glue-parent a-font-body-m'},
+    "www.koreaboo.com": {'tag': 'div', 'class': 'entry-content'},
 }
 
 def find_article_body(soup, url):
@@ -88,12 +96,16 @@ def get_article_text(url):
     else:
         return None, None
 
+import time
+
 def append_article(df):
+    start_time = time.time()
+
     redirect = []
     redirectLink = []
     articleImage = []
     articleBody = []
-    
+
     with tqdm(total=len(df), unit="tasks", bar_format="{percentage:3.0f}% {bar} {n_fmt}/{total_fmt} [{elapsed}]") as progress_bar:
         for _, row in df.iterrows():
             url = row['link']
@@ -119,13 +131,16 @@ def append_article(df):
 
             progress_bar.update(1)  # 작업 완료 시 마다 progress bar를 1 증가시킵니다.
 
+            if time.time() - start_time > 60:
+                break
+
     df['redirect'] = pd.Series(redirect + [False] * (len(df) - len(redirect)))
     df['redirectLink'] = pd.Series(redirectLink + ["NotExecuted"] * (len(df) - len(redirectLink)))
     df['articleImage'] = pd.Series(articleImage + [None] * (len(df) - len(articleImage)))
     df['articleBody'] = pd.Series(articleBody + [None] * (len(df) - len(articleBody)))
 
 def output_csv(df):
-    df.to_csv('data/raw_data/rss_part2.csv', sep=';', index=False)
+    df.to_csv('data/processed_data/2_article_crawler/rss_part2.csv', sep=';', index=False)
 
 if __name__ == '__main__':
     print("Step 2-2: Crawling article body... ")

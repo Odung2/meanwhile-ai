@@ -12,7 +12,6 @@ os.environ["JAVA_HOME"] = java_path
 
 # 1. 기본 KeyBERT
 
-import pandas as pd
 import numpy as np
 import itertools
 
@@ -21,8 +20,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from sentence_transformers import SentenceTransformer
 
-def input_csv():
-    return pd.read_csv('data/raw_data/rss_part2.csv', sep=';', keep_default_na=False)
+print("Step 1-2: Extract keyword from korean search... ")
 
 # 예시) 드론에 대한 한국어 문서
 """
@@ -39,59 +37,57 @@ doc = '''
          "향후 화재진압, 인명구조 등에도 드론을 활용하기 위해 연구개발(R&D)을 하고 있다"고 말했다.
       '''
 """
-"""
-with open('data/raw_data/article.txt', mode='r', newline='', encoding='utf-8') as file:
+with open('data/processed_data/1_search/search_ko.txt', mode='r', newline='', encoding='utf-8') as file:
     # 파일의 내용을 읽어 변수에 저장
     doc = file.read()
 
-print(doc)
+okt = Okt()
+
+tokenized_doc = okt.pos(doc)
+tokenized_nouns = ' '.join([word[0] for word in tokenized_doc if word[1] == 'Noun'])
+
+# print('품사 태깅 10개만 출력 :', tokenized_doc[:10])
+# print('명사 추출 :', tokenized_nouns)
+
+# 사이킷런의 CountVectorizer를 사용하여 단어 추출
+# CountVectorizer : n_gram_range의 인자를 사용하면 단쉽게 n-gram을 추출 가능
+# 예시) (2, 3)으로 설정하면 결과 후보는
+# 2개의 단어를 한 묶음으로 간주하는 bigram과
+# 3개의 단어를 한 묶음으로 간주하는 trigram을 추출
+
+n_gram_range = (1, 3)
+
+count = CountVectorizer(ngram_range=n_gram_range).fit([tokenized_nouns])
+candidates = count.get_feature_names_out()
+
+# print('trigram 개수 :', len(candidates))
+# print('trigram 다섯개만 출력 :', candidates[:5])
+
 """
-
-n_gram_range = (1, 1)
-
-def tokenize(doc):
-    okt = Okt()
-
-    tokenized_doc = okt.pos(doc)
-    tokenized_nouns = ' '.join([word[0] for word in tokenized_doc if word[1] == 'Noun'])
-
-    # print('품사 태깅 10개만 출력 :', tokenized_doc[:10])
-    # print('명사 추출 :', tokenized_nouns)
-
-    # 사이킷런의 CountVectorizer를 사용하여 단어 추출
-    # CountVectorizer : n_gram_range의 인자를 사용하면 단쉽게 n-gram을 추출 가능
-    # 예시) (2, 3)으로 설정하면 결과 후보는
-    # 2개의 단어를 한 묶음으로 간주하는 bigram과
-    # 3개의 단어를 한 묶음으로 간주하는 trigram을 추출
-
-    count = CountVectorizer(ngram_range=n_gram_range).fit([tokenized_nouns])
-    candidates = count.get_feature_names_out()
-
-    # print('trigram 개수 :', len(candidates))
-    # print('trigram 다섯개만 출력 :', candidates[:5])
-
-    return candidates
-
+top5 = candidates[:5]
+with open('data/processed_data/keyword.csv', mode='w', newline='', encoding='utf-8') as file:
+    row_as_string = ";".join(top5) + '\n'
+    file.write(row_as_string)
+"""
+    
 # 문서와 문서로부터 추출한 키워드들을 SBERT를 통해서 수치화 할 차례
 # 한국어를 포함하고 있는 다국어 SBERT를 로드
+
 model = SentenceTransformer('sentence-transformers/xlm-r-100langs-bert-base-nli-stsb-mean-tokens')
 
-def keybert_keyword(doc_embedding, candidate_embeddings, candidates):
-    # 문서와 가장 유사한 키워드들을 추출
-    # 문서와 가장 유사한 키워드들은 문서를 대표하기 위한 좋은 키워드라고 가정
-    # 상위 5개의 키워드를 출력
+doc_embedding = model.encode([doc])
+candidate_embeddings = model.encode(candidates)
 
-    top_n = 5
-    distances = cosine_similarity(doc_embedding, candidate_embeddings)
-    keywords = [candidates[index] for index in distances.argsort()[0][-top_n:]]
+# 문서와 가장 유사한 키워드들을 추출
+# 문서와 가장 유사한 키워드들은 문서를 대표하기 위한 좋은 키워드라고 가정
+# 상위 5개의 키워드를 출력
 
-    return keywords
+top_n = 5
+distances = cosine_similarity(doc_embedding, candidate_embeddings)
+keywords = [candidates[index] for index in distances.argsort()[0][-top_n:]]
 """
-    with open('data/processed_data/keyword.csv', mode='w', newline='', encoding='utf-8') as file:
-        file.write(";".join(top5) + '\n')
-        file.write(";".join(keywords) + '\n')
+print(";".join(keywords) + '\n')
 """
-        
 # 5개의 키워드가 출력되는데, 이들의 의미가 비슷함
 # 비슷한 의미의 키워드들이 리턴되는 데는 이유가 있음
 # 당연히 이 키워드들이 문서를 가장 잘 나타내고 있기 때문
@@ -110,7 +106,7 @@ def keybert_keyword(doc_embedding, candidate_embeddings, candidates):
 # 데이터 쌍 사이의 최대 합 거리는 데이터 쌍 간의 거리가 최대화되는 데이터 쌍으로 정의
 # 여기서의 의도는 후보 간의 유사성을 최소화하면서 문서와의 후보 유사성을 극대화하고자 하는 것
 
-def max_sum_sim(doc_embedding, candidate_embeddings, candidates, top_n, nr_candidates):
+def max_sum_sim(doc_embedding, candidate_embeddings, top_n, nr_candidates):
     # 문서와 각 키워드들 간의 유사도
     distances = cosine_similarity(doc_embedding, candidate_embeddings)
 
@@ -180,6 +176,9 @@ def mmr(doc_embedding, candidate_embeddings, words, top_n, diversity):
     # 최고의 키워드는 이미 추출했으므로 top_n-1번만큼 아래를 반복.
     # ex) top_n = 5라면, 아래의 loop는 4번 반복됨.
     for _ in range(top_n - 1):
+        if not candidates_idx:
+            break
+
         candidate_similarities = word_doc_similarity[candidates_idx, :]
         target_similarities = np.max(word_similarity[candidates_idx][:, keywords_idx], axis=1)
 
@@ -200,73 +199,10 @@ result = mmr(doc_embedding, candidate_embeddings, candidates, top_n=5, diversity
 print(";".join(result) + '\n')
 """
 # 그러나 상대적으로 높은 diversity값은 다양한 키워드 5개를 만들어냄
-"""
+
 result = mmr(doc_embedding, candidate_embeddings, candidates, top_n=5, diversity=0.7)
-print(";".join(result) + '\n')
-"""
 
-def output_csv(df):
-    df.to_csv('data/raw_data/rss_part3.csv', sep=';', index=False)
+with open('data/processed_data/1_search/search_keyword_ko.txt', mode='w', newline='', encoding='utf-8') as file:
+    file.write(";".join(result) + '\n')
 
-from tqdm import tqdm
-
-if __name__ == '__main__':
-    print("Step 3: Extract Keyword from article body... ")
-
-    df = input_csv()
-
-    keywords0 = []
-    keywords1 = []
-    keywords2 = []
-    keywords3 = []
-    keywords4 = []
-    keywords5 = []
-
-    with tqdm(total=len(df), unit="tasks", bar_format="{percentage:3.0f}% {bar} {n_fmt}/{total_fmt} [{elapsed}]") as progress_bar:
-        for _, row in df.iterrows():
-            doc = row['articleBody']
-
-            if doc != '':
-                candidates = tokenize(doc)
-                # print(candidates)
-
-                doc_embedding = model.encode([doc])
-                candidate_embeddings = model.encode(candidates)
-
-                # Method 1
-                keyword1 = keybert_keyword(doc_embedding, candidate_embeddings, candidates)
-                # Method 2
-                keyword2 = max_sum_sim(doc_embedding, candidate_embeddings, candidates, top_n=5, nr_candidates=10)
-                # Method 3
-                keyword3 = max_sum_sim(doc_embedding, candidate_embeddings, candidates, top_n=5, nr_candidates=10)
-                # Method 4
-                keyword4 = mmr(doc_embedding, candidate_embeddings, candidates, top_n=5, diversity=0.2)
-                # Method 5
-                keyword5 = mmr(doc_embedding, candidate_embeddings, candidates, top_n=5, diversity=0.7)
-            else:
-                candidates = None
-                keyword1 = None
-                keyword2 = None
-                keyword3 = None
-                keyword4 = None
-                keyword5 = None
-
-            keywords0.append(candidates)
-            keywords1.append(keyword1)
-            keywords2.append(keyword2)
-            keywords3.append(keyword3)
-            keywords4.append(keyword4)
-            keywords5.append(keyword5)
-
-            progress_bar.update(1)  # 작업 완료 시 마다 progress bar를 1 증가시킵니다.
-    
-    df['keywords0'] = keywords0
-    df['keywords1'] = keywords1
-    df['keywords2'] = keywords2
-    df['keywords3'] = keywords3
-    df['keywords4'] = keywords4
-    df['keywords5'] = keywords5
-
-    output_csv(df)
-
-    print("Complete!!!\n")
+print("Complete!!!\n")
