@@ -8,5 +8,5 @@ router.register(r'article', ArticleViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('trend/', get_trend_news, name='get_trend_news')
+    path('trend', get_trend_news, name='get_articles'), 
 ]
