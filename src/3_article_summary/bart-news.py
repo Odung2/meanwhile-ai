@@ -49,9 +49,12 @@ with open('data/processed_data/summary.txt', mode='w', newline='', encoding='utf
     file.write(tokenizer.decode(summary_text_ids[0], skip_special_tokens=True))
 """
 
-def output_csv(df):
-    df.to_csv('data/processed_data/3_summarization/rss_part3.csv', sep=';', index=False)
+from googletrans import Translator
 
+translator = Translator()
+
+def output_csv(df):
+    df.to_csv('data/processed_data/3_article_summary/rss_part3.csv', sep=';', index=False)
 
 from tqdm import tqdm
 
@@ -65,11 +68,14 @@ if __name__ == '__main__':
     with tqdm(total=len(df), unit="tasks", bar_format="{percentage:3.0f}% {bar} {n_fmt}/{total_fmt} [{elapsed}]") as progress_bar:
         for idx, row in df.iterrows():
             doc = row['articleBody']
-            ko = row['language'] == 0
 
             if doc != '':
                 try:
-                    summary.append(summarize_ko(doc) if ko else summarize_en(doc))
+                    if row['language'] == 0:
+                        summary.append(summarize_ko(doc))
+                    else:
+                        summary.append(summarize_en(doc))
+                        # summary.append(translator.translate(summarize_en(doc), src='en', dest='ko').text)
                 except Exception:
                     summary.append(None)
             else:
@@ -78,6 +84,8 @@ if __name__ == '__main__':
             progress_bar.update(1)  # 작업 완료 시 마다 progress bar를 1 증가시킵니다.
     
     df['summary'] = summary
+    
+    df = df.dropna(subset=["summary"])
 
     output_csv(df)
 

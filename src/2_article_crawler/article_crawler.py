@@ -36,7 +36,7 @@ domain_conditions_map = {
     "news.kbs.co.kr": {'tag': 'div', 'class': 'landing-box'},
     "biz.chosun.com": {'tag': 'section', 'class': 'article-body'},
     "www.hani.co.kr": {'tag': 'div', 'class': 'text'},
-        
+
 
     "hitsdailydouble.com": {'tag': 'div', 'class': 'hits_news_detail_post'},
     "www.forbes.com": {'tag': 'div', 'class': 'article-body fs-article fs-responsive-text current-article'},
@@ -139,14 +139,19 @@ def append_article(df):
     df['articleImage'] = pd.Series(articleImage + [None] * (len(df) - len(articleImage)))
     df['articleBody'] = pd.Series(articleBody + [None] * (len(df) - len(articleBody)))
 
+    df = df.query("redirect != False")
+    # df = df.drop('redirect', axis=1)
+
+    return df
+
 def output_csv(df):
     df.to_csv('data/processed_data/2_article_crawler/rss_part2.csv', sep=';', index=False)
 
 if __name__ == '__main__':
-    print("Step 2-2: Crawling article body... ")
+    print("Step 2-3: Crawling article body... ")
 
     df = input_csv()
-    append_article(df)
+    df = append_article(df)
     output_csv(df)
 
     print("Complete!!!\n")

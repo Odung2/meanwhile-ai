@@ -22,7 +22,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sentence_transformers import SentenceTransformer
 
 def input_csv():
-    return pd.read_csv('data/processed_data/3_summarization/rss_part3.csv', sep=';', keep_default_na=False)
+    return pd.read_csv('data/processed_data/3_article_summary/rss_part3.csv', sep=';', keep_default_na=False)
 
 # 예시) 드론에 대한 한국어 문서
 """
@@ -215,20 +215,20 @@ print(";".join(result) + '\n')
 """
 
 def output_csv(df):
-    df.to_csv('data/processed_data/4_summary_keyword/rss_part4.csv', sep=';', index=False)
+    df.to_csv('data/processed_data/4_article_keyword/rss_part4.csv', sep=';', index=False)
 
 from tqdm import tqdm
 
 if __name__ == '__main__':
-    print("Step 5: Extract Keyword from article summary... ")
+    print("Step 4: Extract Keyword from article summary... ")
 
     df = input_csv()
 
     keywords0 = []
-    keywords1 = []
-    keywords2 = []
-    keywords3 = []
-    keywords4 = []
+    # keywords1 = []
+    # keywords2 = []
+    # keywords3 = []
+    # keywords4 = []
     keywords5 = []
 
     with tqdm(total=len(df), unit="tasks", bar_format="{percentage:3.0f}% {bar} {n_fmt}/{total_fmt} [{elapsed}]") as progress_bar:
@@ -251,37 +251,37 @@ if __name__ == '__main__':
                     candidate_embeddings = model_en.encode(candidates)
 
                 # Method 1
-                keyword1 = keybert_keyword(doc_embedding, candidate_embeddings, candidates)
+                # keyword1 = keybert_keyword(doc_embedding, candidate_embeddings, candidates)
                 # Method 2
-                keyword2 = max_sum_sim(doc_embedding, candidate_embeddings, candidates, top_n=5, nr_candidates=10)
+                # keyword2 = max_sum_sim(doc_embedding, candidate_embeddings, candidates, top_n=5, nr_candidates=10)
                 # Method 3
-                keyword3 = max_sum_sim(doc_embedding, candidate_embeddings, candidates, top_n=5, nr_candidates=10)
+                # keyword3 = max_sum_sim(doc_embedding, candidate_embeddings, candidates, top_n=5, nr_candidates=10)
                 # Method 4
-                keyword4 = mmr(doc_embedding, candidate_embeddings, candidates, top_n=5, diversity=0.2)
+                # keyword4 = mmr(doc_embedding, candidate_embeddings, candidates, top_n=5, diversity=0.2)
                 # Method 5
                 keyword5 = mmr(doc_embedding, candidate_embeddings, candidates, top_n=5, diversity=0.7)
             else:
                 candidates = None
-                keyword1 = None
-                keyword2 = None
-                keyword3 = None
-                keyword4 = None
+                # keyword1 = None
+                # keyword2 = None
+                # keyword3 = None
+                # keyword4 = None
                 keyword5 = None
 
             keywords0.append(candidates)
-            keywords1.append(keyword1)
-            keywords2.append(keyword2)
-            keywords3.append(keyword3)
-            keywords4.append(keyword4)
+            # keywords1.append(keyword1)
+            # keywords2.append(keyword2)
+            # keywords3.append(keyword3)
+            # keywords4.append(keyword4)
             keywords5.append(keyword5)
 
             progress_bar.update(1)  # 작업 완료 시 마다 progress bar를 1 증가시킵니다.
     
     df['summaryKeywords0'] = keywords0
-    df['summaryKeywords1'] = keywords1
-    df['summaryKeywords2'] = keywords2
-    df['summaryKeywords3'] = keywords3
-    df['summaryKeywords4'] = keywords4
+    # df['summaryKeywords1'] = keywords1
+    # df['summaryKeywords2'] = keywords2
+    # df['summaryKeywords3'] = keywords3
+    # df['summaryKeywords4'] = keywords4
     df['summaryKeywords5'] = keywords5
 
     output_csv(df)
