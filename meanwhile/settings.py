@@ -25,8 +25,11 @@ SECRET_KEY = 'p1fucr$d!o%(b)5)8)hhjp0_+grgam5bmdx_*(olg=04y58nmz'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+DJONGO_ENABLE_SCHEMA_VALIDATION = False
+
 ALLOWED_HOSTS = ["*"]
 
+PROXY_ALLOW_IPS = '*'
 
 # Application definition
 
@@ -38,7 +41,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'articles'
+    'articles',
+    'corsheaders'
 ]
 
 MIDDLEWARE = [
@@ -49,7 +53,11 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware'
 ]
+
+CORS_ORIGIN_ALLOW_ALL=True
 
 ROOT_URLCONF = 'meanwhile.urls'
 

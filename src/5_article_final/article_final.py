@@ -1,5 +1,5 @@
 import pandas as pd
-"""
+
 from tqdm import tqdm
 import sys
 from pathlib import Path
@@ -11,10 +11,10 @@ sys.path.append(str(target_path))
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "meanwhile.settings")
 
+django.setup()
+
 from articles.models import Article
 
-django.setup()
-"""
 def input_csv():
     return pd.read_csv('data/processed_data/4_article_keyword/rss_part4.csv', sep=';', keep_default_na=False)
 
@@ -58,25 +58,13 @@ if __name__ == '__main__':
             'redirectLink': 'url',
             'articleImage': 'image',
             'summaryKeywords0': 'totalKeywords',
-            'summaryKeywords5': 'topKeywords'
+            'summaryKeywords5': 'topKeywords',
+            'title': 'title',
+            'languate': 'language'
         }
     )
 
-    for _, row in df_filtered.iterrows():
-        news_summary = row['summary']
-        news_keywords = row['topKeywords']
-        new_refs = row['url']
-        news_src = row['image']
-        news_date = row['date']
-        news_lang = row['language']
-
-        # new_article = Article(summary = news_summary, keywords=news_keywords, refs = new_refs, url=news_src, date=news_date, lang=news_lang)
-
-        # print(new_article)
-
-        # new_article.save()
-
-
+    
     output_csv(df_filtered)
 
 
@@ -94,5 +82,21 @@ if __name__ == '__main__':
     db.drop_duplicates(subset='url', keep='first', inplace=True)
 
     output_db(db)
+
+    for _, row in db.iterrows():
+        print(row)
+        print()
+        news_summary = row['summary']
+        news_keywords = row['topKeywords']
+        news_title = row['title']
+        new_refs = row['url']
+        news_src = row['image']
+        news_date = row['date']
+        news_lang = row['language']
+        print(news_summary, news_src, new_refs, news_date, news_keywords, news_lang, news_title)
+
+        new_article = Article(summary = news_summary, title = news_title, keywords=news_keywords, refs = new_refs, url=news_src, date=news_date, lang=news_lang)
+
+        new_article.save()
 
     print("Complete!!!\n")

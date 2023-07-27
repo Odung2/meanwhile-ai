@@ -36,6 +36,10 @@ domain_conditions_map = {
     "news.kbs.co.kr": {'tag': 'div', 'class': 'landing-box'},
     "biz.chosun.com": {'tag': 'section', 'class': 'article-body'},
     "www.hani.co.kr": {'tag': 'div', 'class': 'text'},
+    "www.seoul.co.kr": {'tag': 'div', 'class': 'S20_v_article'},
+    "www.senews.kr": {'tag': 'div', 'id': 'textinput'},
+    "mdtoday.co.kr": {'tag': 'div', 'id': 'articleBody'},
+    "www.wowtv.co.kr": {'tag': 'div', 'class': 'box-news-body'},
 
 
     "hitsdailydouble.com": {'tag': 'div', 'class': 'hits_news_detail_post'},
@@ -44,6 +48,9 @@ domain_conditions_map = {
     "www.koreaboo.com": {'tag': 'div', 'class': 'entry-content'},
     "www.sportskeeda.com": {'tag': 'div', 'id': 'article-content'},
     "www.bnd.com": {'tag': 'article', 'class': 'paper story-body'},
+    "www.bbc.com": {'tag': 'article', 'class': 'ssrcss-pv1rh6-ArticleWrapper e1nh2i2l6'},
+    "www.sidneydailynews.com": {'tag': 'div', 'class': 'td-post-content tagdiv-type'},
+    "www.news8000.com": {'tag': 'div', 'class': 'col-lg-12 col-md-12 col-sm-12'},
 }
 
 def find_article_body(soup, url):

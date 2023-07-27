@@ -170,7 +170,7 @@ def mmr(doc_embedding, candidate_embeddings, words, top_n, diversity):
 
 """그러나 상대적으로 높은 diversity값은 다양한 키워드 5개를 만들어냅니다."""
 
-result = mmr(doc_embedding, candidate_embeddings, candidates, top_n=5, diversity=0.7)
+result = mmr(doc_embedding, candidate_embeddings, candidates, top_n=1, diversity=0.7)
 
 with open('data/processed_data/7_timeline_keyword/timeline_keyword_en.txt', mode='w', newline='', encoding='utf-8') as file:
     file.write(";".join(result) + '\n')
