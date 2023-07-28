@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Article
+from .models import Article, ArticleList
 
 class ListField(serializers.ListField):
     def to_representation(self, data):
@@ -16,4 +16,14 @@ class ArticleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Article
-        fields = ('_id', 'title', 'summary', 'keywords', 'refs', 'date', 'url', 'lang')
+        fields = ('title', 'summary', 'keywords', 'refs', 'date', 'url', 'lang')
+
+class ArticleListSerializer(serializers.ModelSerializer):
+    # Use the custom ListField for keywords and refs
+    keywords = ListField()
+    refs = ListField()
+    title = ListField()
+
+    class Meta:
+        model = ArticleList
+        fields = ('title', 'summary', 'keywords', 'refs', 'date', 'url', 'lang')

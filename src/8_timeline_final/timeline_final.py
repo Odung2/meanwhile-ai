@@ -1,22 +1,33 @@
 import pandas as pd
 from tqdm import tqdm
 import numpy as np
-
+import os
 import ast
 
 import sys
 from pathlib import Path
+articles_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
+sys.path.append(articles_directory)
 
-import os
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'meanwhile.settings')
+
+
 import django
+
+import json
+
+django.setup()
+
+from articles.models import ArticleList
+
+
+from articles.serializer import ArticleListSerializer
+
 target_path = Path(__file__).resolve().parent.parent.parent
 sys.path.append(str(target_path))
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "meanwhile.settings")
 
-django.setup()
-
-from articles.models import Article
 
 def input_text1():
     with open('data/processed_data/7_timeline_keyword/timeline_keyword_ko.txt', mode='r', newline='', encoding='utf-8') as file:
@@ -71,17 +82,9 @@ def summarize_en(input_text, max_length=128):
     )
     return tokenizer_en.decode(summary_ids[0], skip_special_tokens=True)
 
-def output_txt(timeline_keyword_ko, timeline_ko, timeline_keyword_en, timeline_en):
-    with open('data/processed_data/8_timeline_final/timeline_final.txt', mode='w', newline='', encoding='utf-8') as file:
-        file.write("timeline_ko\n")
-        file.write(f"{timeline_keyword_ko}\n")
-        file.write(f"{timeline_ko}\n")
-        file.write("\n")
-
-        file.write("timeline_ko\n")
-        file.write(f"{timeline_keyword_en}\n")
-        file.write(f"{timeline_en}\n")
-        file.write("\n")
+def output_txt(link, jsons):
+    with open(link, mode='w', newline='', encoding='utf-8') as file:
+        file.write(json.dumps(jsons))
 
 if __name__ == '__main__':
     print("Step 8: Timeline final... ")
@@ -90,13 +93,13 @@ if __name__ == '__main__':
     timeline_keyword_en = input_text2()
     df = input_csv()
 
-    df_ko = df[df['language'] == 0]
+    df_ko = df[df['language'] == 0].copy()
     df_ko['topKeywords'] = df_ko['topKeywords'].apply(ast.literal_eval)
-    df_ko = df_ko[df_ko['topKeywords'].apply(lambda x: timeline_keyword_ko in x)].reset_index(drop=True)
+    df_ko = df_ko[df_ko['totalKeywords'].apply(lambda x: timeline_keyword_ko in x)].reset_index(drop=True)
     
-    df_en = df[df['language'] == 1]
+    df_en = df[df['language'] == 1].copy()
     df_en['topKeywords'] = df_en['topKeywords'].apply(ast.literal_eval)
-    df_en = df_en[df_en['topKeywords'].apply(lambda x: timeline_keyword_en in x)].reset_index(drop=True)
+    df_en = df_en[df_en['totalKeywords'].apply(lambda x: timeline_keyword_en in x)].reset_index(drop=True)
     
     group_ko = np.zeros(len(df_ko))
     group_en = np.zeros(len(df_en))
@@ -163,7 +166,7 @@ if __name__ == '__main__':
 
         print(f"{news_summary}\n{news_src}\n{new_refs}\n{news_date}\n{news_keywords}\n{news_lang}\n{news_title}\n\n")
 
-        new_event = Article(summary = news_summary, title = news_title, keywords=news_keywords, refs = new_refs, url=news_src, date=news_date, lang=news_lang)
+        new_event = ArticleList(summary = news_summary, title = news_title, keywords=news_keywords, refs = new_refs, url=news_src, date=news_date, lang=news_lang)
         timeline_ko.append(new_event)
 
         # new_article.save()
@@ -193,11 +196,15 @@ if __name__ == '__main__':
 
         print(f"{news_summary}\n{news_src}\n{new_refs}\n{news_date}\n{news_keywords}\n{news_lang}\n{news_title}\n\n")
 
-        new_event = Article(summary = news_summary, title = news_title, keywords=news_keywords, refs = new_refs, url=news_src, date=news_date, lang=news_lang)
+        new_event = ArticleList(summary = news_summary, title = news_title, keywords=news_keywords, refs = new_refs, url=news_src, date=news_date, lang=news_lang)
         timeline_en.append(new_event)
 
-        # new_article.save()
+    serializer = ArticleListSerializer(timeline_en, many=True)
+    timeline_en = serializer.data
+    serializer = ArticleListSerializer(timeline_ko, many=True)
+    timeline_ko = serializer.data
 
-    output_txt(timeline_keyword_ko, timeline_ko, timeline_keyword_en, timeline_en)
+    output_txt('data/processed_data/8_timeline_final/timeline_ko_final.txt', timeline_ko)
+    output_txt('data/processed_data/8_timeline_final/timeline_en_final.txt', timeline_en)
 
     print("Complete!!!\n")

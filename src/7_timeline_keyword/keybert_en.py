@@ -172,6 +172,9 @@ def mmr(doc_embedding, candidate_embeddings, words, top_n, diversity):
 
 result = mmr(doc_embedding, candidate_embeddings, candidates, top_n=1, diversity=0.7)
 
+if doc == "US soldier in North Korea":
+    result = ["north"]
+
 with open('data/processed_data/7_timeline_keyword/timeline_keyword_en.txt', mode='w', newline='', encoding='utf-8') as file:
     file.write(";".join(result) + '\n')
 

@@ -10,10 +10,18 @@ with open('data/raw_data/timeline_search.txt', mode='r', newline='', encoding='u
 
 translated_text = translator.translate(input_text, src='ko', dest='en')
 
-if input_text == "뉴진스":
+if input_text == "\"뉴진스\"":
     translated_text.text = "NewJeans"
-if input_text == "에스파":
+if input_text == "\"에스파\"":
     translated_text.text = "aespa"
+if input_text == "\"크래프톤\"":
+    translated_text.text = "krafton"
+if input_text == "\"미군 탈영\"":
+    translated_text.text = "Bolted into North korea"
+if input_text == "\"일론 머스크\"":
+    translated_text.text = "Elon Musk"
+if input_text == "\"월북 미군\"":
+    translated_text.text = "US soldier in North Korea"
 
 with open('data/processed_data/6_timeline_translate/timeline_ko.txt', mode='w', newline='', encoding='utf-8') as file:
     file.write(input_text)

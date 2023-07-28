@@ -40,7 +40,14 @@ domain_conditions_map = {
     "www.senews.kr": {'tag': 'div', 'id': 'textinput'},
     "mdtoday.co.kr": {'tag': 'div', 'id': 'articleBody'},
     "www.wowtv.co.kr": {'tag': 'div', 'class': 'box-news-body'},
-
+    "www.newspim.com": {'tag': 'div', 'class': 'bodynews'},
+    "www.getnews.co.kr": {'tag': 'article', 'id': 'article-view-content-div'},
+    "www.dt.co.kr": {'tag': 'div', 'class': 'article_view'},
+    "www.inven.co.kr": {'tag': 'div', 'id': 'imageCollectDiv'},
+    "zdnet.co.kr": {'tag': 'div', 'id': 'content-20230727111416'},
+    "bloomingbit.io": {'tag': 'section', 'id': 'container'},
+    "hypebeast.kr": {'tag': 'div', 'class': 'post-body-content'},
+    
 
     "hitsdailydouble.com": {'tag': 'div', 'class': 'hits_news_detail_post'},
     "www.forbes.com": {'tag': 'div', 'class': 'article-body fs-article fs-responsive-text current-article'},
@@ -51,6 +58,27 @@ domain_conditions_map = {
     "www.bbc.com": {'tag': 'article', 'class': 'ssrcss-pv1rh6-ArticleWrapper e1nh2i2l6'},
     "www.sidneydailynews.com": {'tag': 'div', 'class': 'td-post-content tagdiv-type'},
     "www.news8000.com": {'tag': 'div', 'class': 'col-lg-12 col-md-12 col-sm-12'},
+    "tech.hindustantimes.com": {'tag': 'div', 'class': 'storyContent'},
+    "www.sportskeeda.com": {'tag': 'div', 'id': 'article-content'},
+    "www.techlusive.in": {'tag': 'div', 'class': 'lhs-col art-details'},
+    "www.businesswire.com": {'tag': 'article', 'class': 'bw-release-main'},
+    "fortune.com": {'tag': 'div', 'data-cy': 'articleContent'},
+    "www.businessinsider.com": {'tag': 'div', 'class': 'content-lock-content'},
+    "www.dailymail.co.uk": {'tag': 'div', 'itemprop': 'articleBody'},
+    "electrek.co": {'tag': 'div', 'class': 'container med post-content'},
+    "www.bloomberg.com": {'tag': 'main', 'class': 'dvz-content'},
+    "www.foxbusiness.com": {'tag': 'div', 'class': 'article-body'},
+    "www.forbes.com": {'tag': 'div', 'class': 'article-body fs-article fs-responsive-text current-article'},
+    "www.foxnews.com": {'tag': 'div', 'class': 'article-body'},
+    "abcnews.go.com": {'tag': 'article', 'class': 'xvlf ZRif TKoO eaKK '},
+    "www.bbc.com": {'tag': 'article', 'class': 'ssrcss-pv1rh6-ArticleWrapper e1nh2i2l6'},
+    "edition.cnn.com": {'tag': 'div', 'class': 'article__content'},
+    "www.ft.com": {'tag': 'div', 'class': 'article__content-body n-content-body js-article__content-body'},
+    "www.nknews.org": {'tag': 'div', 'class': 'content-wrapper'},
+    "www.reuters.com": {'tag': 'div', 'class': 'article-body__content__17Yit'},
+    "www.independent.co.uk": {'tag': 'div', 'class': 'sc-cvxyxr-6 qQMkz sc-cvxyxr-8 kuyHvt'},
+    "news.sky.com": {'tag': 'div', 'class': 'sdc-article-body sdc-article-body--story sdc-article-body--lead'},
+    "nypost.com": {'tag': 'div', 'class': 'single__content entry-content m-bottom '},
 }
 
 def find_article_body(soup, url):
@@ -84,7 +112,10 @@ def find_article_body(soup, url):
 """
 
 def get_article_text(url):
-    response = requests.get(url)
+    try:
+        response = requests.get(url, timeout=2)
+    except Timeout:
+        return None, None
 
     if response.status_code == 200:
         soup = BeautifulSoup(response.text, 'html.parser')
@@ -142,6 +173,15 @@ def append_article(df):
 
                 response = requests.get(url, timeout=2)
                 article_image, article_body = get_article_text(response.url)
+
+                try:
+                    image_response = requests.head(article_image, timeout=2)
+                    # URL에 접속해서 상태 코드가 200 (정상)인 경우에만 True를 반환합니다.
+                    if image_response.status_code == 200:
+                        article_image = None
+                except:
+                    # 요청 중 예외가 발생하면 False를 반환합니다.
+                    article_image = None
 
                 redirect.append(True)
                 redirectLink.append(response.url)

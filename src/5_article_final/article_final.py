@@ -15,6 +15,19 @@ django.setup()
 
 from articles.models import Article
 
+
+from pymongo import MongoClient
+
+# MongoDB 서버에 연결
+client = MongoClient('mongodb://jiyeon:meanwhile@localhost:27017/')
+
+# 데이터베이스에 접근 (예: mydb)
+db = client['meanwhile_ai_db']
+
+# 'articles' 컬렉션에 접근
+collection = db['articles']
+
+
 def input_csv():
     return pd.read_csv('data/processed_data/4_article_keyword/rss_part4.csv', sep=';', keep_default_na=False)
 
@@ -26,6 +39,15 @@ def output_csv(df):
 
 def output_db(df):
     df.to_csv('data/processed_data/database.csv', sep=';', index=False)
+
+def is_url_duplicated(url):
+    query = {"refs": url}
+    
+    count = collection.count_documents(query)
+    
+    if count > 0:
+        return True
+    return False
 
 if __name__ == '__main__':
     
@@ -68,24 +90,22 @@ if __name__ == '__main__':
     output_csv(df_filtered)
 
 
-    db_new = df_filtered
-    db_old = input_db()
+    db_csv_new = df_filtered
+    db_csv_old = input_db()
 
     # 중복 제거하기 전에 'key' 열을 인덱스로 설정
-    db_new.set_index('url', inplace=True)
-    db_old.set_index('url', inplace=True)
+    db_csv_new.set_index('url', inplace=True)
+    db_csv_old.set_index('url', inplace=True)
 
     # 두 데이터프레임 병합
-    db = pd.concat([db_new, db_old]).reset_index()
+    db_csv = pd.concat([db_csv_new, db_csv_old]).reset_index()
 
     # 'key' 열을 기준으로 중복 제거
-    db.drop_duplicates(subset='url', keep='first', inplace=True)
+    db_csv.drop_duplicates(subset='url', keep='first', inplace=True)
 
-    output_db(db)
+    output_db(db_csv)
 
-    for _, row in db.iterrows():
-        print(row)
-        print()
+    for _, row in db_csv.iterrows():
         news_summary = row['summary']
         news_keywords = row['topKeywords']
         news_title = row['title']
@@ -93,10 +113,12 @@ if __name__ == '__main__':
         news_src = row['image']
         news_date = row['date']
         news_lang = row['language']
-        print(news_summary, news_src, new_refs, news_date, news_keywords, news_lang, news_title)
 
-        new_article = Article(summary = news_summary, title = news_title, keywords=news_keywords, refs = new_refs, url=news_src, date=news_date, lang=news_lang)
+        if not is_url_duplicated(new_refs):
 
-        new_article.save()
+            new_article = Article(summary = news_summary, title = news_title, keywords=news_keywords, refs = new_refs, url=news_src, date=news_date, lang=news_lang)
+
+            new_article.save()
 
     print("Complete!!!\n")
+

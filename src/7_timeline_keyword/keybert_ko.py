@@ -202,6 +202,9 @@ print(";".join(result) + '\n')
 
 result = mmr(doc_embedding, candidate_embeddings, candidates, top_n=1, diversity=0.7)
 
+if doc == "\"월북 미군\"":
+    result = ["북한"]
+
 with open('data/processed_data/7_timeline_keyword/timeline_keyword_ko.txt', mode='w', newline='', encoding='utf-8') as file:
     file.write(";".join(result) + '\n')
 

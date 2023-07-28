@@ -1,8 +1,8 @@
 timeline_ko
-뉴진스
-[<Article: Article object (None)>, <Article: Article object (None)>, <Article: Article object (None)>, <Article: Article object (None)>, <Article: Article object (None)>]
+방류
+[<Article: Article object (None)>]
 
 timeline_ko
-newjeans
-[<Article: Article object (None)>, <Article: Article object (None)>, <Article: Article object (None)>]
+contaminated
+[]
 
